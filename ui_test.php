@@ -223,7 +223,7 @@ opacity:0.9;
 
 .goButton{
  position:absolute;
- left: 700px;
+ left: 500px;
  top: 10px;
  line-height: 1;
  text-decoration:none;
@@ -246,6 +246,34 @@ opacity:0.9;
  }
 
 .goButton:hover {
+ opacity:0.9;
+ }
+
+.stopButton{
+ position:absolute;
+ left: 680px;
+ top: 10px;
+ line-height: 1;
+ text-decoration:none;
+ display: inline-block;
+ padding: 8px 12px;
+ font-family: Arial, sans-serif;
+ text-transform:uppercase;
+ font-size:22px;
+ letter-spacing:1px;
+ color:#fff;
+ cursor:pointer;
+ border-radius: 5px;
+ -webkit-border-radius: 5px;
+ box-shadow: 0 1px 3px rgba(0,0,0,0.40);
+ -webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.40);
+ text-shadow: -1px -1px 0px rgba(0,0,0,0.15);
+ background: #cc3333 url('../images/overlay.png') left top repeat-x;
+ background-image: -moz-linear-gradient(100% 100% 90deg, #cc3333, #de3746);								 
+ background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#de3746), to(#cc3333));			      			  	    
+ }
+
+.stopButton:hover {
  opacity:0.9;
  }
 
@@ -545,6 +573,25 @@ box-shadow: 0 1px 3px rgba(0,0,0,0.5);
 box-shadow: 0 1px 3px black;  
 }
 
+.statusbox				    {
+ position:absolute;
+ left: 850px;
+ top: 13px;
+				    width:110px;
+font-family: Georgia;
+text-decoration:none;
+text-align: center;
+				    color: #686868;
+background:-webkit-gradient(linear,0% 0%,0% 100%,from(rgba(255,255,255,1)),to(rgba(185,185,185,1)));
+background:-moz-linear-gradient(top,rgba(255,255,255,1),rgba(185,185,185,1));
+border-radius: 5px;  
+-webkit-border-radius: 5px;  			
+				      box-shadow: 0 1px 3px rgba(0,0,0,0.5);  
+				      -webkit-box-shadow: 0 0px 2px rgba(0,0,0,0.5);
+				      box-shadow: 0 1px 3px black;  
+				    }
+				      
+
 </style>
 <script src="jquery.selectbox.min.js" type="text/javascript"></script>
 <script src="jquery.js" type="text/javascript"></script>
@@ -562,6 +609,31 @@ function clearExistingData(){
      });
 
    }
+
+				    function stopRun() {
+				      /*Function to stop the runs from the stop button*/
+				      $.ajax({
+					type: 'POST',
+					    url: "stopRuns.php",
+					    data:{stop:stop},
+					    success: function(data) {
+
+					  }
+					});
+				    }
+
+				    function startRun() {
+				      /*Function to update the runlock table */
+				      $.ajax({
+					type: 'POST',
+					    url: "startRuns.php",
+					    data:{start:start},
+					    success: function(data) {
+					    //alert("in function");
+					  }
+					});
+				    }
+
 
 function threadSubmission(columnValue,entryValue,threadTypeValue,threadNameValue){  
   //alert(entryValue);
@@ -727,7 +799,15 @@ function copyRun(){
 	      }); 
 }
 
+				    function storeID(thread, pc) {
+				      var this_thread = thread;
+				      var this_pc = pc;
+				      alert("here");
+				    }
+
+
 				    $(document).ready(function(){
+
 
     var thread_types=new Array();
       //Create the dropdown menu to add a new PC (takes 3 inputs: pc_name,ip,port)
@@ -832,7 +912,7 @@ function copyRun(){
     $("#removeMM").live("click","#removeMM", function() {
 	var mm_conf = confirm("Are you sure you want to remove this memory manager?");
 	if (mm_conf) {
-	  $(this).parent().parent().remove();
+	  $(this).parent().remove();
 	}
       });
 
@@ -918,13 +998,15 @@ function copyRun(){
       //Now use the array of thread names to look up the data in each of these threads. This array will just store the entire string of data; it gets parsed later
       //create the 2d array to store the data for each thread for each pc
       //note: format is [pc index][thread index]
+      
       var dataArray = new Array(pcArray.length);
       for (var x = 0; x < (pcArray.length); x++) {
 	var ta_length = pcFlags[x+1]-pcFlags[x];
 	dataArray[x] = new Array(ta_length);
       }
-      
 
+      //At this point: we have a selected run number. How do we get the clicked on PC button/ MM button?
+      /*
       for (var pi=0; pi < (pcArray.length); pi++) {
 	for (var ti=0; ti < (pcFlags[pi+1] - pcFlags[pi]); ti++) {
 	  var pcName = pcArray[pi];
@@ -942,6 +1024,8 @@ function copyRun(){
 	      });
 	}
       }
+      */
+      
       //Now the JSON strings holding all of the data for each string are stored in the array to be referenced by dataArray[pcname][threadname]
       //***reminder:some of them are empty strings - check before referencing
       
@@ -1045,6 +1129,7 @@ function copyRun(){
 	      */
 
 		}
+
       
 	    for (var m = mmPCFlags[j]; m < mmPCFlags[j+1]; m++) {
 	      var mmSplit = mmArray[m].split(':');
@@ -1074,28 +1159,53 @@ function copyRun(){
     });
 				      
 				      
-  
+  /*Start button functionality */  
   $("#go").live('click',function() {
       var answer=confirm("Load Selected Run?  This will delete current 'run zero' and load your setting in place.");
       if(answer)
 	{
+	  //This function clears the existing data
 	  clearExistingData();
-	  $(".pcbutton").each(function(){	     
-	      var pcObj = $("#" + this.id + "");
-	      var pcNameValue = pcObj.data("pcName");
-	      var pcIPValue = pcObj.data("IP");
-	      var pcPortValue = pcObj.data("port");		     
-
-	      alert(pcNameValue);
-	      createPC(pcNameValue,pcIPValue,pcPortValue);
-	    });
-	  
+	  startRun();
+	  alert("here");
 	 	}
     
     });
-				      });
-				   
+
+  /*Stop button functionality */
+  $("#stop").live('click',function() {
+      var conf = confirm("Are you sure you want to stop the current run?");
+      if (conf) {
+	/*Go into RUNLOCK and change the setting */
+	stopRun();
+      }
+    });
+
+  
+				    var check = function(callback) {
+				      // this function gets the current status stored in the RUNLOCK table
+				      $.ajax({
+					type: 'GET',
+					    url: "checkStatus.php",
+					    success: function(current_status) {
+					    var status = current_status;
+					    callback(status);
+					  }
+					});
+				    }
+  
+				    var callback = function(status) {
+				      var theDiv = document.getElementById("current_status");
+				      theDiv.innerHTML = status;
+				    }
+
+				    check(callback);
+				    //This is the timer function that checks every set amount of time and then checks the current state
+				    setInterval(function() {check(callback)}, 3000);
+				    //Using this: check(callback); <- callback function - will call the ajax function to grab it from the db
+
 				    
+				      });				    
 </script>
 </head>
 <body>
@@ -1106,6 +1216,10 @@ function copyRun(){
 
 <select id="runupload-dropdown" name="runupload-dropdown" class="runMenu"></select>
 <button type="button" id="go" class="goButton">Start Run</button>
+<button type="button" id="stop" class="stopButton">Stop Run</button>
+<div id="current_status" class="statusbox"></div>
+		
+
 
 </body>
 </html>
